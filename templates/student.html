@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat with Support Agent</title>
+    <link href="/static/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Student Chat</h1>
+        <ul id="messages" class="message-list"></ul>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off" placeholder="Type your message..."/>
+            <button>Send</button>
+        </form>
+    </div>
+    <script>
+        const ws = new WebSocket("ws://" + location.host + "/ws");
+
+        ws.onmessage = function(event) {
+            const messages = document.getElementById('messages');
+            const messageData = JSON.parse(event.data);
+            
+            const messageElement = document.createElement('li');
+            messageElement.className = 'message student';
+            messageElement.innerHTML = `<div class="meta">You | Prediction: ${messageData.label} (${messageData.score})</div>${messageData.text}`;
+            if (messageData.label === 'DANGER') {
+                messageElement.classList.add('danger');
+            }
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight; // Auto-scroll
+        };
+
+        function sendMessage(event) {
+            const input = document.getElementById("messageText");
+            ws.send(input.value);
+            input.value = '';
+            event.preventDefault();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supervisor Dashboard</title>
+    <link href="/static/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Live Dashboard</h1>
+        <ul id="messages">
+            {% for msg in messages %}
+                <li class="message supervisor {% if msg.label == 'DANGER' %}danger{% endif %}">
+                    <div class="meta">Student | Prediction: {{ msg.label }} ({{ msg.score }})</div>
+                    {{ msg.text }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <script>
+        const ws = new WebSocket("ws://" + location.host + "/ws");
+
+        ws.onmessage = function(event) {
+            const messages = document.getElementById('messages');
+            const messageData = JSON.parse(event.data);
+            
+            const messageElement = document.createElement('li');
+            messageElement.className = 'message supervisor';
+            messageElement.innerHTML = `<div class="meta">Student | Prediction: ${messageData.label} (${messageData.score})</div>${messageData.text}`;
+            if (messageData.label === 'DANGER') {
+                messageElement.classList.add('danger');
+            }
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight; // Auto-scroll
+        };
+    </script>
+</body>
+</html>
